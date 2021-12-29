@@ -1,1 +1,56 @@
+#ui.R
+
+library(shiny)
+# The user interface is defined
+shinyUI(pageWithSidebar(
+  
+  # Title of the application
+  headerPanel("Analyze Data"),
+  
+  # Provide the side bar view of caption, number of observations and selection of dataset
+  sidebarPanel(
+    textInput("caption", "Caption:", "Summary"),
+    
+    selectInput("dataset", "Choose a dataset:", 
+                choices = c("rock", "pressure", "cars")),
+    
+    numericInput("obs", "Number of observations to view:", 10)
+  ),
+
+  # View the summary with given dataset that showed in the HTML table format
+  mainPanel(
+    h3(textOutput("caption")), 
+    
+    verbatimTextOutput("summary"), 
+    
+    tableOutput("view")
+  )
+))
+
+#server.R
+
+library(shiny)
+library(datasets)
+# Put the server logic to obtain the dataset
+shinyServer(function(input, output) {
+  
+  datasetInput <- reactive({
+    switch(input$dataset,
+           "rock" = rock,
+           "pressure" = pressure,
+           "cars" = cars)
+  })
+output$caption <- renderText({
+    input$caption
+  })
+  
+    output$summary <- renderPrint({
+    dataset <- datasetInput()
+    summary(dataset)
+  })
+  
+  output$view <- renderTable({
+    head(datasetInput(), n = input$obs)
+  })
+})
 
